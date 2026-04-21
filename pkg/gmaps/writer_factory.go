@@ -2,47 +2,44 @@ package gmaps
 
 import (
 	"fmt"
-	"io"
 	"strings"
 )
 
-// OutputFormat represents a supported output format.
-type OutputFormat string
-
-const (
-	FormatCSV    OutputFormat = "csv"
-	FormatJSON   OutputFormat = "json"
-	FormatExcel  OutputFormat = "excel"
-	FormatSQLite OutputFormat = "sqlite"
-)
-
-// WriterConfig holds configuration needed to create a writer.
-type WriterConfig struct {
-	Format OutputFormat
-	// W is used for CSV and JSON writers.
-	W io.Writer
-	// FilePath is used for Excel and SQLite writers.
-	FilePath string
-}
-
-// NewWriter creates the appropriate EntryWriter based on the config.
-func NewWriter(cfg WriterConfig) (EntryWriter, error) {
-	switch OutputFormat(strings.ToLower(string(cfg.Format))) {
-	case FormatCSV:
-		return NewCSVWriter(cfg.W), nil
-	case FormatJSON:
-		return NewJSONWriter(cfg.W), nil
-	case FormatExcel:
-		if cfg.FilePath == "" {
-			return nil, fmt.Errorf("excel writer requires a file path")
+// NewWriter creates an EntryWriter based on the provided format and output path.
+// Supported formats: csv, json, jsonl, excel, sqlite, postgres.
+func NewWriter(format, outputPath, dsn string) (EntryWriter, error) {
+	switch strings.ToLower(format) {
+	case "csv":
+		if outputPath == "" {
+			return nil, fmt.Errorf("output path is required for csv format")
 		}
-		return NewExcelWriter(cfg.FilePath)
-	case FormatSQLite:
-		if cfg.FilePath == "" {
-			return nil, fmt.Errorf("sqlite writer requires a file path")
+		return NewCSVWriter(outputPath)
+	case "json":
+		if outputPath == "" {
+			return nil, fmt.Errorf("output path is required for json format")
 		}
-		return NewSQLiteWriter(cfg.FilePath)
+		return NewJSONWriter(outputPath)
+	case "jsonl":
+		if outputPath == "" {
+			return nil, fmt.Errorf("output path is required for jsonl format")
+		}
+		return NewJSONLWriter(outputPath)
+	case "excel":
+		if outputPath == "" {
+			return nil, fmt.Errorf("output path is required for excel format")
+		}
+		return NewExcelWriter(outputPath)
+	case "sqlite":
+		if outputPath == "" {
+			return nil, fmt.Errorf("output path is required for sqlite format")
+		}
+		return NewSQLiteWriter(outputPath)
+	case "postgres":
+		if dsn == "" {
+			return nil, fmt.Errorf("dsn is required for postgres format")
+		}
+		return NewPostgresWriter(dsn)
 	default:
-		return nil, fmt.Errorf("unsupported output format: %q", cfg.Format)
+		return nil, fmt.Errorf("unsupported format: %s", format)
 	}
 }
