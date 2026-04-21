@@ -5,41 +5,28 @@ import (
 	"strings"
 )
 
-// NewWriter creates an EntryWriter based on the provided format and output path.
-// Supported formats: csv, json, jsonl, excel, sqlite, postgres.
-func NewWriter(format, outputPath, dsn string) (EntryWriter, error) {
+// NewWriter creates a new EntryWriter based on the provided format and path.
+// Supported formats: csv, json, jsonl, excel (xlsx), sqlite, postgres, tsv.
+func NewWriter(format, path, dsn string) (EntryWriter, error) {
 	switch strings.ToLower(format) {
 	case "csv":
-		if outputPath == "" {
-			return nil, fmt.Errorf("output path is required for csv format")
-		}
-		return NewCSVWriter(outputPath)
+		return NewCSVWriter(path)
 	case "json":
-		if outputPath == "" {
-			return nil, fmt.Errorf("output path is required for json format")
-		}
-		return NewJSONWriter(outputPath)
+		return NewJSONWriter(path)
 	case "jsonl":
-		if outputPath == "" {
-			return nil, fmt.Errorf("output path is required for jsonl format")
+		return NewJSONLWriter(path)
+	case "excel", "xlsx":
+		if path == "" {
+			return nil, fmt.Errorf("writer factory: excel format requires a file path")
 		}
-		return NewJSONLWriter(outputPath)
-	case "excel":
-		if outputPath == "" {
-			return nil, fmt.Errorf("output path is required for excel format")
-		}
-		return NewExcelWriter(outputPath)
+		return NewExcelWriter(path)
 	case "sqlite":
-		if outputPath == "" {
-			return nil, fmt.Errorf("output path is required for sqlite format")
-		}
-		return NewSQLiteWriter(outputPath)
+		return NewSQLiteWriter(path)
 	case "postgres":
-		if dsn == "" {
-			return nil, fmt.Errorf("dsn is required for postgres format")
-		}
 		return NewPostgresWriter(dsn)
+	case "tsv":
+		return NewTSVWriter(path)
 	default:
-		return nil, fmt.Errorf("unsupported format: %s", format)
+		return nil, fmt.Errorf("writer factory: unsupported format %q", format)
 	}
 }
