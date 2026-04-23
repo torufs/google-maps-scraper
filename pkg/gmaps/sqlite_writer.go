@@ -14,10 +14,17 @@ type SQLiteWriter struct {
 
 // NewSQLiteWriter opens (or creates) a SQLite database at the given path and
 // ensures the entries table exists.
+// Note: WAL mode is enabled for better concurrent read performance.
 func NewSQLiteWriter(path string) (*SQLiteWriter, error) {
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
 		return nil, fmt.Errorf("open sqlite db: %w", err)
+	}
+
+	// Enable WAL mode for improved write performance and concurrent reads.
+	if _, err = db.Exec(`PRAGMA journal_mode=WAL;`); err != nil {
+		db.Close()
+		return nil, fmt.Errorf("enable WAL mode: %w", err)
 	}
 
 	const schema = `CREATE TABLE IF NOT EXISTS entries (
