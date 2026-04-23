@@ -36,6 +36,10 @@ func TestJSONWriter_Write(t *testing.T) {
 	if decoded.Website != e.Website {
 		t.Errorf("website mismatch: want %q, got %q", e.Website, decoded.Website)
 	}
+	// also verify phone is preserved correctly
+	if decoded.Phone != e.Phone {
+		t.Errorf("phone mismatch: want %q, got %q", e.Phone, decoded.Phone)
+	}
 }
 
 func TestJSONWriter_WriteNil(t *testing.T) {
@@ -48,6 +52,11 @@ func TestJSONWriter_WriteNil(t *testing.T) {
 
 	if w.Count() != 0 {
 		t.Fatalf("expected count 0 after nil write, got %d", w.Count())
+	}
+
+	// nil write should produce no output
+	if buf.Len() != 0 {
+		t.Errorf("expected empty buffer after nil write, got %d bytes", buf.Len())
 	}
 }
 
