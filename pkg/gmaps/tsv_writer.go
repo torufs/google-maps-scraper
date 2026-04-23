@@ -16,22 +16,33 @@ type TSVWriter struct {
 
 // NewTSVWriter creates a new TSVWriter that writes to the given path.
 // If path is empty, it returns an error.
+// The file is created with append mode if it already exists, or created fresh otherwise.
 func NewTSVWriter(path string) (*TSVWriter, error) {
 	if path == "" {
 		return nil, fmt.Errorf("tsv writer: path is required")
 	}
 
-	f, err := os.Create(path)
+	// Use O_APPEND so that re-running the scraper doesn't clobber previous results.
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
-		return nil, fmt.Errorf("tsv writer: create file: %w", err)
+		return nil, fmt.Errorf("tsv writer: open file: %w", err)
 	}
 
 	w := csv.NewWriter(f)
 	w.Comma = '\t'
 
+	// Only write the header row when the file is newly created (size == 0).
+	fi, err := f.Stat()
+	if err != nil {
+		_ = f.Close()
+		return nil, fmt.Errorf("tsv writer: stat file: %w", err)
+	}
+	alreadyHasContent := fi.Size() > 0
+
 	return &TSVWriter{
 		writer: w,
 		file:   f,
+		header: alreadyHasContent, // skip header if file already has data
 	}, nil
 }
 
