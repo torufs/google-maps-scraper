@@ -60,6 +60,18 @@ func TestCSVWriter_Write(t *testing.T) {
 	if !found {
 		t.Errorf("expected to find title %q in CSV data row", entry.Title)
 	}
+
+	// also verify the phone number appears in the data row
+	foundPhone := false
+	for _, field := range records[1] {
+		if field == entry.Phone {
+			foundPhone = true
+			break
+		}
+	}
+	if !foundPhone {
+		t.Errorf("expected to find phone %q in CSV data row", entry.Phone)
+	}
 }
 
 func TestCSVWriter_WriteNil(t *testing.T) {
