@@ -14,6 +14,10 @@ type PostgresWriter struct {
 
 // NewPostgresWriter opens a connection to the given PostgreSQL DSN, ensures the
 // results table exists, and returns a ready-to-use PostgresWriter.
+//
+// The DSN should be a standard PostgreSQL connection string, e.g.:
+//
+//	postgres://user:password@localhost:5432/dbname?sslmode=disable
 func NewPostgresWriter(dsn string) (*PostgresWriter, error) {
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -40,8 +44,9 @@ func createPostgresTable(db *sql.DB) error {
 		rating      REAL,
 		review_count INTEGER,
 		category    TEXT,
-		latitude    REAL,
-		longitude   REAL
+		latitude    DOUBLE PRECISION,
+		longitude   DOUBLE PRECISION,
+		created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 	)`)
 	if err != nil {
 		return fmt.Errorf("postgres_writer: create table: %w", err)
