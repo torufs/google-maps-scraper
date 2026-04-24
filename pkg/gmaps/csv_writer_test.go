@@ -48,6 +48,18 @@ func TestCSVWriter_Write(t *testing.T) {
 	if len(records) < 2 {
 		t.Fatalf("expected at least 2 rows (header + data), got %d", len(records))
 	}
+
+	// verify the title field appears somewhere in the data row
+	found := false
+	for _, field := range records[1] {
+		if field == entry.Title {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("expected to find title %q in CSV data row", entry.Title)
+	}
 }
 
 func TestCSVWriter_WriteNil(t *testing.T) {
