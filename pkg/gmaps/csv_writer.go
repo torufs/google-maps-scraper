@@ -40,7 +40,8 @@ func (c *CSVWriter) Write(e *Entry) error {
 		e.Phone,
 		e.PlusCode,
 		strconv.Itoa(e.ReviewCount),
-		strconv.FormatFloat(e.Rating, 'f', 1, 64),
+		// Use 2 decimal places for rating for slightly more precision.
+		strconv.FormatFloat(e.Rating, 'f', 2, 64),
 		strconv.FormatFloat(e.Latitude, 'f', 6, 64),
 		strconv.FormatFloat(e.Longitude, 'f', 6, 64),
 		e.CID,
