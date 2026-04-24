@@ -44,6 +44,7 @@ func TestJSONLWriter_WriteNil(t *testing.T) {
 	w, err := NewJSONLWriter(path)
 	require.NoError(t, err)
 
+	// Writing nil should be a no-op and leave the file empty
 	require.NoError(t, w.Write(nil))
 	require.NoError(t, w.Close())
 
@@ -93,6 +94,7 @@ func TestJSONLWriter_MultipleEntries(t *testing.T) {
 }
 
 func TestNewJSONLWriter_EmptyPath(t *testing.T) {
+	// An empty path should return an error rather than silently failing
 	_, err := NewJSONLWriter("")
 	assert.Error(t, err)
 }
