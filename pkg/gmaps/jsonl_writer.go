@@ -13,6 +13,7 @@ type JSONLWriter struct {
 }
 
 // NewJSONLWriter creates a new JSONLWriter that writes to the given file path.
+// If the file already exists, it will be truncated.
 func NewJSONLWriter(filePath string) (*JSONLWriter, error) {
 	if filePath == "" {
 		return nil, fmt.Errorf("file path must not be empty")
@@ -24,6 +25,9 @@ func NewJSONLWriter(filePath string) (*JSONLWriter, error) {
 	}
 
 	enc := json.NewEncoder(f)
+	// Disable HTML escaping so characters like '&', '<', '>' are preserved as-is
+	// in the output, which makes the JSONL easier to read for place names/URLs.
+	enc.SetEscapeHTML(false)
 
 	return &JSONLWriter{
 		file:    f,
