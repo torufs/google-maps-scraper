@@ -13,15 +13,15 @@ type JSONLWriter struct {
 }
 
 // NewJSONLWriter creates a new JSONLWriter that writes to the given file path.
-// If the file already exists, it will be truncated.
+// If the file already exists, new entries will be appended to it.
 func NewJSONLWriter(filePath string) (*JSONLWriter, error) {
 	if filePath == "" {
 		return nil, fmt.Errorf("file path must not be empty")
 	}
 
-	f, err := os.Create(filePath)
+	f, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create jsonl file: %w", err)
+		return nil, fmt.Errorf("failed to open jsonl file: %w", err)
 	}
 
 	enc := json.NewEncoder(f)
