@@ -16,7 +16,8 @@ type SQLiteWriter struct {
 // ensures the entries table exists.
 // Note: WAL mode is enabled for better concurrent read performance.
 func NewSQLiteWriter(path string) (*SQLiteWriter, error) {
-	db, err := sql.Open("sqlite3", path)
+	// Use cache=shared to allow multiple connections to share the same in-memory cache.
+	db, err := sql.Open("sqlite3", path+"?cache=shared")
 	if err != nil {
 		return nil, fmt.Errorf("open sqlite db: %w", err)
 	}
@@ -25,6 +26,12 @@ func NewSQLiteWriter(path string) (*SQLiteWriter, error) {
 	if _, err = db.Exec(`PRAGMA journal_mode=WAL;`); err != nil {
 		db.Close()
 		return nil, fmt.Errorf("enable WAL mode: %w", err)
+	}
+
+	// Increase the cache size to 8000 pages (~32 MB) for better read performance.
+	if _, err = db.Exec(`PRAGMA cache_size=-8000;`); err != nil {
+		db.Close()
+		return nil, fmt.Errorf("set cache size: %w", err)
 	}
 
 	const schema = `CREATE TABLE IF NOT EXISTS entries (
