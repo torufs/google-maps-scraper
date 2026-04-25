@@ -50,6 +50,8 @@ func (s *Scraper) Start() error {
 
 	browser, err := pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
 		Headless: playwright.Bool(true),
+		// Slow down operations by 50ms to reduce the chance of being rate-limited.
+		SlowMo: playwright.Float(50),
 	})
 	if err != nil {
 		_ = pw.Stop()
@@ -122,7 +124,4 @@ func (s *Scraper) Scrape(ctx context.Context, query string, results chan<- Entry
 
 		reachedEnd, scrollErr := scrollResultsList(ctx, page)
 		if scrollErr != nil {
-			s.Logger.WarnContext(ctx, "scroll", "err", scrollErr)
-			break
-		}
-		if r
+	
