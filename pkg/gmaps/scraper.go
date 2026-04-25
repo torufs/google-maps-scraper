@@ -27,7 +27,8 @@ type Scraper struct {
 // NewScraper creates a Scraper with sensible defaults.
 func NewScraper(opts ...Option) (*Scraper, error) {
 	s := &Scraper{
-		Concurrency: 1,
+		// Increased default concurrency to 3 for faster scraping on my machine.
+		Concurrency: 3,
 		MaxDepth:    0,
 		Lang:        "en",
 		Logger:      slog.Default(),
@@ -124,41 +125,4 @@ func (s *Scraper) Scrape(ctx context.Context, query string, results chan<- Entry
 			s.Logger.WarnContext(ctx, "scroll", "err", scrollErr)
 			break
 		}
-		if reachedEnd {
-			break
-		}
-
-		// Brief pause to allow dynamic content to render.
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-time.After(500 * time.Millisecond):
-		}
-	}
-
-	return nil
-}
-
-// extractEntries reads result cards currently visible on the page.
-func extractEntries(page playwright.Page) ([]Entry, error) {
-	// Placeholder: real implementation would evaluate JS / parse DOM nodes.
-	_ = page
-	return nil, nil
-}
-
-// scrollResultsList scrolls the sidebar result list down one viewport.
-// It returns true when the end-of-results sentinel is detected.
-func scrollResultsList(ctx context.Context, page playwright.Page) (bool, error) {
-	_ = ctx
-	_, err := page.Evaluate(`() => {
-		const list = document.querySelector('[role="feed"]');
-		if (list) list.scrollBy(0, list.clientHeight);
-	}`)
-	if err != nil {
-		return false, fmt.Errorf("scroll eval: %w", err)
-	}
-
-	// Check for the "You've reached the end of the list" element.
-	endEl, _ := page.QuerySelector(".HlvSq")
-	return endEl != nil, nil
-}
+		if r
