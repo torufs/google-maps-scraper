@@ -56,6 +56,7 @@ func TestTSVWriter_WriteNil(t *testing.T) {
 	}
 	defer w.Close()
 
+	// Writing a nil entry should be a no-op and not cause a panic or error
 	if err := w.Write(nil); err != nil {
 		t.Fatalf("Write(nil) should not error, got: %v", err)
 	}
@@ -97,9 +98,16 @@ func TestTSVWriter_MultipleEntries(t *testing.T) {
 		t.Fatalf("ReadAll: %v", err)
 	}
 
-	// header + 3 data rows
+	// Expect header row + 3 data rows = 4 total records
 	if len(records) != 4 {
 		t.Errorf("expected 4 records (header+3), got %d", len(records))
+	}
+
+	// Verify the titles appear in the correct order
+	for i, e := range entries {
+		if records[i+1][0] != e.Title {
+			t.Errorf("row %d: expected title %q, got %q", i+1, e.Title, records[i+1][0])
+		}
 	}
 }
 
